@@ -1,6 +1,7 @@
 const User = require("../model/userModel")
 
 const bcrypt = require("bcryptjs")
+const sendEmail = require("../service/sendEmail")
 
 
 
@@ -75,4 +76,34 @@ if(isMatched){
 }
 
 
+}
+
+exports.forgotPassword = async(req,res)=>{
+    const {Email} = req.body
+    if (!Email){
+        return res.status(400).json({
+            message:"Please provide email"
+        })
+    }
+    const userExist = await User.find({userEmail:Email})
+        if(userExist.length===0){
+          return requestAnimationFrame.status(400).json({
+            message:"User email is not register"
+          })
+        }
+
+        const otp = Math.floor(1000+Math.random()*9000)
+        userExist[0].otp =otp
+        
+
+        await sendEmail({
+            Email:"amarkhadkabardiya1234@gmail.com",
+            subject:"verifiaction otp",
+            message:"your otp is"+otp
+        })
+        res.status(200).json({
+            message:"otp send successfully",
+            
+        })
+    
 }

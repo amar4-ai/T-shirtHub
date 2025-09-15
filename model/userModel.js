@@ -23,7 +23,17 @@ const mongoose = require("mongoose")
         type:String,
         enum:["customer","admin"],
     default:"customer"
+    },
+    otp:{
+        type:Number,
+        select:false
+    },
+    isOtpVerified:{
+        type:Boolean,
+        default:false,
+        select:false
     }
+
  },{
     timestamps:true
  })
