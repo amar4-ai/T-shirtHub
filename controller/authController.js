@@ -33,7 +33,7 @@ exports.registerUser = async (req, res) => {
         userName: username,
         userEmail: Email,
         userNumber: Number,
-        userPassword: bcrypt.hashSync(Password,8)
+        userPassword: bcrypt.hashSync(Password, 8)
     })
 
     res.status(201).json({
@@ -62,48 +62,86 @@ exports.loginUser = async (req, res) => {
     }
 
 
-const isMatched = bcrypt.compareSync(Password,userFound[0].userPassword)
+    const isMatched = bcrypt.compareSync(Password, userFound[0].userPassword)
 
-if(isMatched){
-    res.status(200).json({
-        message: "user logged in successfully",
-        data: userFound
-    })
-}else{
-    res.status(400).json({
-        message:"Invalid paswword"
-    })
-}
-
-
-}
-
-exports.forgotPassword = async(req,res)=>{
-    const {Email} = req.body
-    if (!Email){
-        return res.status(400).json({
-            message:"Please provide email"
+    if (isMatched) {
+        res.status(200).json({
+            message: "user logged in successfully",
+            data: userFound
+        })
+    } else {
+        res.status(400).json({
+            message: "Invalid paswword"
         })
     }
-    const userExist = await User.find({userEmail:Email})
-        if(userExist.length===0){
-          return requestAnimationFrame.status(400).json({
-            message:"User email is not register"
-          })
-        }
 
-        const otp = Math.floor(1000+Math.random()*9000)
-        userExist[0].otp =otp
-        
 
-        await sendEmail({
-            Email:"amarkhadkabardiya1234@gmail.com",
-            subject:"verifiaction otp",
-            message:"your otp is"+otp
+}
+
+exports.forgotPassword = async (req, res) => {
+    const { Email } = req.body
+    console.log("hello")
+    if (!Email) {
+        return res.status(400).json({
+            message: "Please provide email"
         })
+    }
+
+
+    const userExist = await User.find({ userEmail: Email })
+    if (userExist.length === 0) {
+        return res.status(400).json({
+            message: "User email is not register"
+        })
+    }
+
+    const otp = Math.floor(1000 + Math.random() * 9000)
+
+    console.log(otp)
+
+
+    userExist[0].otp = otp
+     await userExist[0].save()
+
+    await sendEmail({
+        Email: Email,
+        subject: "verifiaction otp",
+        message: "your otp is" + otp
+    })
+    res.status(200).json({
+        message: "otp send successfully",
+
+    })
+
+
+}
+exports.verifyotp = async (req, res) => {
+    const { Email, otp } = req.body
+
+    if (!Email || !otp) {
+        return res.status(400).json({
+            message: "email and otp must be provide"
+        })
+    }
+    const userExists = await User.find({ userEmail: Email }).select("+otp +isOtpVerified")
+
+    // console.log(userExist)
+    if (userExists.length === 0) {
+        return res.status(400).json({
+            message: "email is not register"
+        })
+    }
+    if (userExists[0].otp !== otp) {
+        return res.status(400).json({
+            message: "Invalid otp"
+        })
+    } else {
+        userExists[0].otp = undefined,
+            userExists[0].isOtpVerified = true,
+            await userExists[0].save()
+
         res.status(200).json({
-            message:"otp send successfully",
-            
+            message: "otp is verify"
         })
-    
+    }
 }

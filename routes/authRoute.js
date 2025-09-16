@@ -1,4 +1,4 @@
-const { registerUser, loginUser, forgotPassword } = require("../controller/authController")
+const { registerUser, loginUser, forgotPassword, verifyotp } = require("../controller/authController")
 
 
 
@@ -9,4 +9,5 @@ router.route("/register").post(registerUser)
 router.route("/login").post(loginUser)
 
 router.route("/forgotpassword").post(forgotPassword)
+router.route("/verifyotp").post(verifyotp)
 module.exports= router
