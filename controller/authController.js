@@ -2,6 +2,7 @@ const User = require("../model/userModel")
 
 const bcrypt = require("bcryptjs")
 const sendEmail = require("../service/sendEmail")
+const jwt = require("jsonwebtoken")
 
 
 
@@ -65,10 +66,17 @@ exports.loginUser = async (req, res) => {
     const isMatched = bcrypt.compareSync(Password, userFound[0].userPassword)
 
     if (isMatched) {
+        const token = jwt.sign({id:userFound[0]._id},"fnsdlnfls",{
+            expiresIn:"2d"
+        })
+
         res.status(200).json({
             message: "user logged in successfully",
-            data: userFound
-        })
+            data: userFound,
+            token:token
+        }
+    
+    )
     } else {
         res.status(400).json({
             message: "Invalid paswword"
@@ -100,7 +108,8 @@ exports.forgotPassword = async (req, res) => {
     console.log(otp)
 
 
-    userExist[0].otp = otp
+    userExist[0].otp = otp,
+    userExist[0].isOtpVerified= false
      await userExist[0].save()
 
     await sendEmail({
